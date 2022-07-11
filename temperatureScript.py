@@ -3,13 +3,18 @@ import subprocess
 
 # filenames for recording the temps of the different GPUs, in the order 
 # they appear in nvidia-smi
-fnames = ['P40temp_2secondIncrements']
+fnames = ['P40temp_2secondIncrements_normalBNNtraining']
 
 def get_temps():
   s = subprocess.run(['nvidia-smi'], stdout=subprocess.PIPE)
   l = str(s.stdout).split('\\n')
+  breakLineInds = []
+  for i in range(len(l)):
+    if l[i][0:4] == '+---':
+      breakLineInds.append(i)
+  pastTempBreak = min([ind for ind in breakLineInds if ind > 8])
   temps = []
-  for line in l[8:]:
+  for line in l[8:pastTempBreak]:
     for item in line.split():
       if item[-1] == 'C': # Only the temp will pass this test
         temps.append(int(item[:-1]))
